@@ -230,7 +230,7 @@ set_target_properties(zyphra-textnorm PROPERTIES
 add_dependencies(zyphra-textnorm zyphra-textnorm-build)
 if (WIN32)
     # Rust std's system libraries on MSVC.
-    set_property(TARGET zyphra-textnorm APPEND PROPERTY INTERFACE_LINK_LIBRARIES ws2_32 userenv ntdll bcrypt)
+    set_property(TARGET zyphra-textnorm APPEND PROPERTY INTERFACE_LINK_LIBRARIES ws2_32 userenv ntdll bcrypt synchronization)
 else()
     set_property(TARGET zyphra-textnorm APPEND PROPERTY INTERFACE_LINK_LIBRARIES ${CMAKE_DL_LIBS} Threads::Threads)
 endif()
