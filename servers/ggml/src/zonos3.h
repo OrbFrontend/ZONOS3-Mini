@@ -248,6 +248,7 @@ struct zonos3_slot {
     bool active = false, done = false;
     int n_past = 0, step = 0, eos_frame = -1, countdown = -1;
     int prefill = 0; // audio-stream rows already present (silence prefill)
+    int eoa_hold = 0, eoa_hold_until = -1; // frames the stop id stays masked after codebook 0 first samples it
     std::vector<int32_t> next_ids;
     std::vector<float> steer;         // [steer_sources * n_embd] hidden delta for the next decode step; empty = none
     // Optional, default off:

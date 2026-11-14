@@ -340,6 +340,13 @@ GeneratePlan resolve(ServerState & s, const json & body, const std::optional<std
             fail(400, "silence_prefill_frames must be 0.." + std::to_string(max_prefill));
         gr.silence_prefill = (int) frames;
     }
+    // eoa_hold_frames: 0 (default) stops at the first stop token; N keeps the take going N more frames.
+    if (set(body, "eoa_hold_frames")) {
+        const int max_prefill = zonos3_generation().silence_prefill_max_frames;
+        const int64_t frames = body["eoa_hold_frames"].get<int64_t>();
+        if (frames < 0 || frames > max_prefill) fail(400, "eoa_hold_frames must be 0.." + std::to_string(max_prefill));
+        gr.eoa_hold_frames = (int) frames;
+    }
     // stream_codebooks / stream_codebooks_scope (prefix streaming's early partial-frame decode): unset = the registry's
     // stream_codebooks default / scope; above n_codebooks a 400. A decoder GGUF without the per-codebook residual
     // biases (or no decoder: zonos3-cli --request) decodes complete frames only (n_codebooks).

@@ -21,7 +21,7 @@ Voice Studio.
 | `GET /v2/capabilities` | Feature flags of the loaded checkpoint and server |
 | `GET /v2/controls` | The steering bundle's controls document, each set's `calibration` included (404 without `--steer-bundle`) |
 | `GET\|POST /v2/speakers` | Default voices plus the session's cached voices (each with its `disabled_controls`); cache a clip or an embedding |
-| `GET /v2/speakers/{id}/preview`, `/embedding` | A voice's audio; its speaker embedding |
+| `GET /v2/speakers/{id}/preview`, `/embedding`, `/reference_codes` | A voice's audio; its speaker embedding; its reference codes (`[frames, 10]`, for `speaker_reference_codes`) |
 | `POST /v2/phonemize` | Gold-lexicon IPA for the words of a text (404 without a lexicon) |
 | `POST /v2/edit/transcribe`, `/v2/edit/align`, `/v2/edit` | Speech editing ([guide](guide.md#speech-editing)) |
 | `/v2/<plugin>/*`, `/<plugin>` | Server plugins mounted with `--plugins` (listed in `plugins` of the capabilities; [guide](guide.md#plugins)) |
@@ -80,6 +80,7 @@ CORS allows every origin and exposes the response headers above.
 | `speaker_cfg_scale` | `1.0` | Reference CFG (1 = off) |
 | `condition_buckets` / `condition_values` | `null` | Condition rows (`loudness`, `fmax`, `speaking_rate`) by bucket or raw value |
 | `silence_prefill_frames` | `null` | Codec-matched silence frames prefilled before the audio: null = the server default (3), 0 = off, at most 30 (more is a 400) |
+| `eoa_hold_frames` | `0` | Frames the end-of-audio token stays masked in every codebook after codebook 0 first samples it, so a take keeps its decay; 0 = stop at once, at most 30 |
 | `accent`, `accent_strength` | `null`, `1.0` | Accent adapter from `/v2/capabilities` `accents` |
 | `controls`, `control_spans`, `control_span_*` | `null` | Steering-bundle controls, whole-utterance or over character spans ([guide](guide.md#steering-controls)) |
 | `controls_cfg_scale` | `1.0` | Guidance on the controls' hidden-space delta, embedding mode (1 = off; [guide](guide.md#steering-controls)) |

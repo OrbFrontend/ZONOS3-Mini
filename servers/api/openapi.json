@@ -1174,6 +1174,11 @@
             ],
             "default": null
           },
+          "eoa_hold_frames": {
+            "description": "Frames the end-of-audio token stays masked after codebook 0 first samples it (0 = stop at once).",
+            "type": "integer",
+            "default": 0
+          },
           "decode_context": {
             "description": "Decode the generated frames behind the last decode_context_frames of the reference prompt.",
             "type": "boolean",
@@ -1482,6 +1487,11 @@
               "null"
             ],
             "default": null
+          },
+          "eoa_hold_frames": {
+            "description": "Frames the end-of-audio token stays masked after codebook 0 first samples it (0 = stop at once).",
+            "type": "integer",
+            "default": 0
           },
           "decode_context": {
             "description": "Decode the generated frames behind the last decode_context_frames of the reference prompt.",
@@ -1808,6 +1818,11 @@
               "null"
             ],
             "default": null
+          },
+          "eoa_hold_frames": {
+            "description": "Frames the end-of-audio token stays masked after codebook 0 first samples it (0 = stop at once).",
+            "type": "integer",
+            "default": 0
           },
           "decode_context": {
             "description": "Decode the generated frames behind the last decode_context_frames of the reference prompt.",

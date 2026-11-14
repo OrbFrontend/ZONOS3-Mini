@@ -1455,7 +1455,17 @@ bool zonos3_slot_sample(const zonos3_model & m, zonos3_slot & s, zonos3_sampler 
                         int max_frames, const zonos3_frame_cb & on_frame) {
     const int ncb = (int) m.hp.n_codebooks, av = (int) m.hp.audio_vocab, W = ncb + 1;
     std::vector<int> frame(ncb);
+    // eoa_hold: the first stop sampled in codebook 0 is resampled without it, and the stop stays masked in every
+    // codebook for eoa_hold frames, so the take keeps its decay instead of ending as soon as the words are spoken.
+    const float saved_bias = smp.stop_bias;
+    if (s.eoa_hold_until >= 0 && s.step < s.eoa_hold_until) smp.stop_bias = -INFINITY;
     for (int cb = 0; cb < ncb; ++cb) frame[cb] = smp.sample(&logits[(size_t) cb * av], cb);
+    if (s.eoa_hold > 0 && s.eoa_hold_until < 0 && frame[0] == smp.stop_id) {
+        s.eoa_hold_until = s.step + s.eoa_hold;
+        smp.stop_bias = -INFINITY;
+        for (int cb = 0; cb < ncb; ++cb) frame[cb] = smp.sample(&logits[(size_t) cb * av], cb);
+    }
+    smp.stop_bias = saved_bias;
     // cold start: codebooks whose delayed stream has not started are forced to audio pad. r is the
     // row index in the audio stream, which already holds `prefill` silence rows.
     const int r = s.prefill + s.step;

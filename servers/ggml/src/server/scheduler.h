@@ -40,6 +40,7 @@ struct GenReq {
     std::vector<float> speaker_embedding;   // embedding mode: [speaker_dim]
     std::vector<int32_t> condition_buckets; // [n_cond]; hp.cond_bucket_counts[i] = unknown
     int silence_prefill = zonos3_generation().silence_prefill_default_frames;
+    int eoa_hold_frames = 0;                // frames the stop stays masked after codebook 0 first samples it
     std::vector<int32_t> decode_context;    // decode_context: the reference's last frames, ordinary [K, n_codebooks]
     float cfg_scale = 1.0f;                 // speaker / tag / controls CFG (1 = off; runs a twin slot)
     bool twin_steered = true;               // the twin decodes with the hidden steering delta (false: controls CFG,

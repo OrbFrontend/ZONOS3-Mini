@@ -399,6 +399,7 @@ static void worker_loop(ServerState & s) {
             job->slot = zonos3_slot{};
             job->slot.index = primary; job->slot.active = true; job->slot.n_past = job->n0;
             job->slot.prefill = job->prompt.prefill_frames;
+            job->slot.eoa_hold = job->gr.eoa_hold_frames;
             job->slot.steer = job->gr.steering.hidden;
             job->slot.accent = job->gr.accent;
             job->slot.accent_strength = job->gr.accent_strength;

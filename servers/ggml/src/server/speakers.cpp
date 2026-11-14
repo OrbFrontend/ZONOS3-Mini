@@ -751,6 +751,16 @@ static void handle_embedding(ServerState & s, const httplib::Request & req, http
     send_json(res, json{{"id", id}, {"embedding", values}});
 }
 
+// The voice's reference codes as [frames][n_codebooks], so a client can store them and send speaker_reference_codes.
+static void handle_reference_codes(ServerState & s, const httplib::Request & req, httplib::Response & res) {
+    const std::string id = req.matches[1];
+    const std::vector<int32_t> codes = voice_codes(s, session_id(req), id);
+    const size_t ncb = s.model.hp.n_codebooks;
+    json rows = json::array();
+    for (size_t f = 0; f + ncb <= codes.size(); f += ncb) rows.push_back(std::vector<int32_t>(codes.begin() + f, codes.begin() + f + ncb));
+    send_json(res, json{{"id", id}, {"codes", rows}});
+}
+
 void register_speaker_routes(httplib::Server & svr, ServerState & s) {
     svr.Get("/v2/speakers", guarded([&s](const httplib::Request & q, httplib::Response & r) { handle_list(s, q, r); }));
     svr.Post("/v2/speakers", guarded([&s](const httplib::Request & q, httplib::Response & r) { handle_create(s, q, r); }));
@@ -758,6 +768,8 @@ void register_speaker_routes(httplib::Server & svr, ServerState & s) {
             guarded([&s](const httplib::Request & q, httplib::Response & r) { handle_preview(s, q, r); }));
     svr.Get(R"(/v2/speakers/([^/]+)/embedding)",
             guarded([&s](const httplib::Request & q, httplib::Response & r) { handle_embedding(s, q, r); }));
+    svr.Get(R"(/v2/speakers/([^/]+)/reference_codes)",
+            guarded([&s](const httplib::Request & q, httplib::Response & r) { handle_reference_codes(s, q, r); }));
 }
 
 } // namespace zs
