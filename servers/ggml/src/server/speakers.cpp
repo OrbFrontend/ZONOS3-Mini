@@ -313,8 +313,33 @@ static FILE * open_temp_file(const char * suffix, fs::path & path) {
     }
 }
 
+// A mono 16-bit PCM WAV already at sample_rate, read without ffmpeg; false for anything else.
+static bool pcm16_wav_samples(const std::vector<uint8_t> & b, int sample_rate, int max_seconds, std::vector<float> & out) {
+    auto u16 = [&](size_t i) { return (uint32_t) b[i] | ((uint32_t) b[i + 1] << 8); };
+    auto u32 = [&](size_t i) { return u16(i) | (u16(i + 2) << 16); };
+    if (b.size() < 12 || memcmp(b.data(), "RIFF", 4) || memcmp(b.data() + 8, "WAVE", 4)) return false;
+    bool pcm16 = false;
+    for (size_t pos = 12; pos + 8 <= b.size();) {
+        const size_t size = std::min<size_t>(u32(pos + 4), b.size() - pos - 8), body = pos + 8;
+        if (!memcmp(b.data() + pos, "fmt ", 4)) {
+            if (size < 16 || u16(body) != 1 || u16(body + 2) != 1 || u32(body + 4) != (uint32_t) sample_rate || u16(body + 14) != 16)
+                return false;
+            pcm16 = true;
+        } else if (!memcmp(b.data() + pos, "data", 4)) {
+            if (!pcm16) return false;
+            const size_t n = std::min(size / 2, (size_t) max_seconds * (size_t) sample_rate);
+            out.resize(n);
+            for (size_t i = 0; i < n; ++i) out[i] = (float) (int16_t) u16(body + 2 * i) / 32768.0f;
+            return n > 0;
+        }
+        pos = body + size + (size & 1);
+    }
+    return false;
+}
+
 // Uploaded audio (any container ffmpeg reads) -> 44.1 kHz mono PCM (at most max_seconds).
 std::vector<float> decode_audio_bytes(const std::vector<uint8_t> & bytes, int max_seconds) {
+    if (std::vector<float> direct; pcm16_wav_samples(bytes, zonos3_generation().sample_rate, max_seconds, direct)) return direct;
     fs::path tmp;
     FILE * f = open_temp_file(".audio", tmp);
     if (!f) fail(500, "cannot write a temporary audio file");
